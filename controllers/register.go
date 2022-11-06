@@ -17,7 +17,7 @@ import (
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
-	utils.SetHeader(w)
+	utils.SetHeader(w, "http://localhost:4000/signin")
 
 	marshal := models.User{}
 

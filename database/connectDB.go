@@ -3,8 +3,10 @@ package database
 import (
 	"context"
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -46,9 +48,12 @@ func Connect(uri string) (*mongo.Client, context.Context,
 	// deadline will of 30 seconds.
 	ctx, cancel := context.WithTimeout(context.Background(),
 		30*time.Second)
-
+	errDotEnv := godotenv.Load()
+	if errDotEnv != nil {
+		fmt.Printf("Error loading .env file %s", errDotEnv)
+	}
 	// mongo.Connect return mongo.Client method
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(Uri))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("DB_URI")))
 	return client, ctx, cancel, err
 }
 
