@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Stupnikjs/golog/controllers"
+	"github.com/Stupnikjs/golog/imgprocess"
 	"github.com/gorilla/mux"
 )
 
@@ -22,6 +23,7 @@ func main() {
 
 	r.HandleFunc("/login", controllers.LogUser)
 	r.HandleFunc("/profile/{id}", controllers.VerifyJWT(controllers.GetUser))
+	r.HandleFunc("/profile/{id}/image", imgprocess.GetImage)
 
 	http.ListenAndServe(":"+port, r)
 

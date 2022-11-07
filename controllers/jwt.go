@@ -15,12 +15,9 @@ func VerifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) htt
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		utils.SetHeader(w, "http://localhost:3000")
 
-		fmt.Println(r.Header)
 		c, err := r.Cookie("token")
 
-		if err != nil {
-			fmt.Printf("erreur dans la lecture du cookie %s", err)
-		} else {
+		if err == nil {
 
 			var tokenString string
 

@@ -7,9 +7,11 @@ import (
 	"net/http"
 )
 
-func ErrorHandler(e error) {
-	if e != nil {
-		fmt.Println(e)
+func ErrorHandler(e ...error) {
+	for _, error := range e {
+		if error != nil {
+			fmt.Println(error)
+		}
 	}
 
 }
