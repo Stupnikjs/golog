@@ -2,10 +2,7 @@ package controllers
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -57,14 +54,15 @@ func LogUser(w http.ResponseWriter, r *http.Request) {
 
 	errMarshal := json.Unmarshal(reqBody, &marshall)
 
-	utils.ErrorHandler(errBody)
-	utils.ErrorHandler(errMarshal)
+	utils.ErrorHandler(errBody, errMarshal)
 
 	client, ctx, cancel, err := database.Connect("mongodb://localhost:27017")
 	if err != nil {
 		panic(err)
 	}
 	defer database.Close(client, ctx, cancel)
+
+	// recherche l'adresse mail dans la base de donnée
 
 	coll := client.Database("reactgo").Collection("users")
 	filter := bson.D{{Key: "email", Value: marshall.Email}}
@@ -73,23 +71,23 @@ func LogUser(w http.ResponseWriter, r *http.Request) {
 
 	if errFind == nil {
 
-		hasher := sha256.New()
-		hashFromReq := hex.EncodeToString(hasher.Sum([]byte(marshall.Password)))
+		hashFromReq := utils.HashtoHex(marshall.Password)
 
 		if hashFromReq == result.Password {
 
 			signedToken := getToken(&result)
 
-			fmt.Println(signedToken)
-
-			cookie, errCookie := getCoookie(signedToken)
+			cookie, errCookie := getCoookie(signedToken) // generation du secure cookie
 			utils.ErrorHandler(errCookie)
 
+			// attribue le cookie
 			http.SetCookie(w, cookie)
+
+			// renvoie l'id de l'user
 			json.NewEncoder(w).Encode(result.Id)
 
 		} else {
-			w.Write([]byte(" auhtentication failed "))
+			w.Write([]byte("password or user is wrong "))
 		}
 
 	}

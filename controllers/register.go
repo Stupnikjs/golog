@@ -15,6 +15,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+func initializeUser(marshal models.User) *models.User {
+	user := models.User{}
+	user.Id = primitive.NewObjectID()
+	user.Name = marshal.Name
+	user.Email = marshal.Email
+	user.Password = marshal.Password
+	return &user
+}
+
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.SetHeader(w, "http://localhost:4000/signin")
@@ -22,10 +31,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	marshal := models.User{}
 
 	body, err := io.ReadAll(r.Body)
-	utils.ErrorHandler(err)
 
 	errDecode := json.Unmarshal(body, &marshal)
-	utils.ErrorHandler(errDecode)
+	utils.ErrorHandler(errDecode, err)
 
 	marshal.Password = utils.HashtoHex(marshal.Password)
 	mailFromReq := marshal.Email
@@ -43,16 +51,13 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	err = coll.FindOne(context.TODO(), filter).Decode(&result)
 	fmt.Println(err)
 	if err == mongo.ErrNoDocuments {
-		user := models.User{}
-		user.Id = primitive.NewObjectID()
-		user.Name = marshal.Name
-		user.Email = marshal.Email
-		user.Password = marshal.Password
 
+		user := initializeUser(marshal)
 		resultInsertOne, err := database.InsertOne(client, ctx, "reactgo", "users", user)
+
 		// Release resource when the main
 		// function is returned.
-		utils.ErrorHandler(err)
+
 		fmt.Printf("resultInsertOne: %v\n", resultInsertOne)
 
 		defer database.Close(client, ctx, cancel)
@@ -60,12 +65,9 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 		// Ping mongoDB with Ping method
 		database.Ping(client, ctx)
 
-		utils.ErrorHandler(err)
-
 		json, errJson := json.Marshal(resultInsertOne)
-		utils.ErrorHandler(errJson)
+		utils.ErrorHandler(err, errJson)
 		w.Write(json)
-
 	}
 
 }

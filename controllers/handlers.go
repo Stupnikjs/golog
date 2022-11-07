@@ -3,7 +3,6 @@ package controllers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -26,7 +25,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	utils.SetHeader(w, "http://localhost:3000")
 	id := IdFromRequest(r)
-	fmt.Println(id)
 
 	client, ctx, cancel, err := database.Connect("mongodb://localhost:27017")
 	if err != nil {
@@ -50,8 +48,5 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		utils.ErrorHandler(errJsonResult)
 		w.Write(jsonResult)
 	}
-	// recuperer le paramettre de la requette pour recuperer info de la base de donnée
-
-	// envoie la reponse sous forme de b64
 
 }
