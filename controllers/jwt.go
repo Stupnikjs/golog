@@ -40,6 +40,11 @@ func VerifyJWT(endpointHandler func(w http.ResponseWriter, r *http.Request)) htt
 				utils.ErrorHandler(err, errCookie)
 
 				if token.Valid {
+
+					claims, _ := token.Claims.(jwt.MapClaims)
+					user := claims["user"].(string)
+					id := claims["id"].(string)
+					SetTokenInCookie(id, user, w)
 					endpointHandler(w, r)
 				} else {
 					w.Write([]byte("Invalid user please try to log again"))

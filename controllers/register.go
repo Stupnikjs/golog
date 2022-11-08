@@ -26,7 +26,7 @@ func initializeUser(marshal models.User) *models.User {
 
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
 
-	utils.SetHeader(w, "http://localhost:4000/signin")
+	utils.SetHeader(w, "http://localhost:3000")
 
 	marshal := models.User{}
 

@@ -16,14 +16,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func getToken(result *models.User) string {
+func GetToken(id string, user string) string {
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(10 * time.Minute)
 	claims["authorized"] = true
-	claims["user"] = result.Name
-	claims["id"] = result.Id
+	claims["user"] = user
+	claims["id"] = id
 
 	signedToken, err := token.SignedString([]byte(os.Getenv("SECRET_TOKEN")))
 	utils.ErrorHandler(err)
@@ -31,7 +31,7 @@ func getToken(result *models.User) string {
 
 }
 
-func getCoookie(content string) (*http.Cookie, error) {
+func GetCoookie(content string) (*http.Cookie, error) {
 	s := securecookie.New([]byte(os.Getenv("SECRET_COOKIE")), nil)
 
 	encoded, err := s.Encode("token", content)
@@ -44,6 +44,16 @@ func getCoookie(content string) (*http.Cookie, error) {
 		Secure:   false,
 	}
 	return cookie, err
+}
+
+func SetTokenInCookie(id string, user string, w http.ResponseWriter) {
+	signedToken := GetToken(id, user)
+
+	cookie, errCookie := GetCoookie(signedToken) // generation du secure cookie
+	utils.ErrorHandler(errCookie)
+
+	// attribue le cookie
+	http.SetCookie(w, cookie)
 }
 
 func LogUser(w http.ResponseWriter, r *http.Request) {
@@ -75,13 +85,7 @@ func LogUser(w http.ResponseWriter, r *http.Request) {
 
 		if hashFromReq == result.Password {
 
-			signedToken := getToken(&result)
-
-			cookie, errCookie := getCoookie(signedToken) // generation du secure cookie
-			utils.ErrorHandler(errCookie)
-
-			// attribue le cookie
-			http.SetCookie(w, cookie)
+			SetTokenInCookie(result.Id.Hex(), result.Name, w)
 
 			// renvoie l'id de l'user
 			json.NewEncoder(w).Encode(result.Id)

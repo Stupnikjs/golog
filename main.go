@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/Stupnikjs/golog/controllers"
+	"github.com/Stupnikjs/golog/videoupload"
 
 	"github.com/gorilla/mux"
 )
@@ -22,6 +23,7 @@ func main() {
 	r.HandleFunc("/signin", controllers.RegisterUser)
 	r.HandleFunc("/login", controllers.LogUser)
 	r.HandleFunc("/profile/{id}", controllers.VerifyJWT(controllers.GetUser))
+	r.HandleFunc("/profile/{id}/video", controllers.VerifyJWT(videoupload.PostVideo))
 
 	http.ListenAndServe(":"+port, r)
 

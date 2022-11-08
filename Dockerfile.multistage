@@ -1,9 +1,7 @@
 # https://docs.docker.com/language/golang/build-images/
 # https://docs.docker.com/engine/reference/builder/
 
-FROM golang:1.16-alpine
-
-
+FROM golang:1.16-buster AS build
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
@@ -18,7 +16,16 @@ COPY *.go ./
 
 RUN go build -o /golog
 
+## Deploy
+FROM gcr.io/distroless/base-debian10
+
+WORKDIR /
+
+COPY --from=build /golog /golog
+
 EXPOSE 8080
 
+USER nonroot:nonroot
 # Run the binary program produced by `go install`
-CMD ["/golog"]
+
+ENTRYPOINT ["/golog"]
